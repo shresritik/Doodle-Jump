@@ -1,15 +1,16 @@
 import { Player } from "./classes/Player";
 import { Platform } from "./classes/Platform";
 import { getRandomValue } from "./utils/utils";
-import bgImg from "./assets/bg.png";
+import bgImg from "./assets/doodlejumpbg.png";
 import blueL from "./assets/blueL.png";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "./constants/constants.ts";
 
 const canvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
-export const CANVAS_WIDTH = 600;
-export const CANVAS_HEIGHT = 1000;
+
 canvas.width = CANVAS_WIDTH;
 canvas.height = CANVAS_HEIGHT;
 canvas.style.backgroundImage = `url("${bgImg}")`;
+canvas.style.backgroundPosition = `cover`;
 
 const ctx = canvas.getContext("2d")!;
 let player: Player;
@@ -37,9 +38,22 @@ function initialPlatform() {
       x: CANVAS_WIDTH / 2,
       y: CANVAS_HEIGHT - 150,
     },
-    20,
+    10,
     100,
     "red"
+  );
+
+  platformArray.push(platform1);
+}
+function newPlatform() {
+  const platform1 = new Platform(
+    {
+      x: getRandomValue(20, (CANVAS_WIDTH * 3) / 4),
+      y: 100,
+    },
+    10,
+    100,
+    "green"
   );
 
   platformArray.push(platform1);
@@ -53,7 +67,7 @@ function createPlatform() {
         y: CANVAS_HEIGHT - 250 - i * 80,
       },
       10,
-      50,
+      100,
       "green"
     );
     platformArray.push(platform);
@@ -76,7 +90,7 @@ const drawPlatform = () => {
     platformArray[0].position.y >= CANVAS_HEIGHT
   ) {
     platformArray.splice(0, 1);
-    createPlatform();
+    newPlatform();
   }
 };
 

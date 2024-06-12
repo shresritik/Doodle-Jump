@@ -2,11 +2,7 @@
   margin: 0;
   padding: 0;
 }
-.game-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+
 body {
   text-align: center;
 }

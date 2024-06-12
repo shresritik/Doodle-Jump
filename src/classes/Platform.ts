@@ -1,6 +1,6 @@
-import { CANVAS_HEIGHT } from "../constants/constants";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../constants/constants";
 export const SPEED = 2;
-interface IPlatform {
+export interface IPlatform {
   position: { x: number; y: number };
   h: number;
   w: number;
@@ -12,7 +12,6 @@ export class Platform implements IPlatform {
   h: number;
   w: number;
   color: string;
-  verticalDistance: number = 0.5;
   constructor(
     position: { x: number; y: number },
     h: number,
@@ -33,6 +32,13 @@ export class Platform implements IPlatform {
       this.position.y += velocity * 20;
     } else {
       this.position.y -= velocity * SPEED;
+    }
+  };
+  moveX = () => {
+    if (this.position.x < 0) {
+      this.position.x = CANVAS_WIDTH - this.w;
+    } else if (this.position.x + this.w > CANVAS_WIDTH) {
+      this.position.x = 0;
     }
   };
 }

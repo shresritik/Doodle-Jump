@@ -1,6 +1,7 @@
 import { CANVAS_WIDTH } from "../constants/constants";
 import { Platform, SPEED } from "./Platform";
-
+import left from "../assets/blueL.png";
+import right from "../assets/blueR.png";
 interface IPlayer {
   position: { x: number; y: number };
   h: number;
@@ -17,11 +18,12 @@ export class Player implements IPlayer {
   h: number;
   w: number;
   image: HTMLImageElement;
+  doodleLeft: HTMLImageElement | null;
+  doodleRight: HTMLImageElement | null;
   keys: TKeys = {};
-  velocityX = 0;
-  velocityY = 5;
-  initialVelocityY = -8;
-  gravity = 0.4;
+  velocityY = 0;
+  initialVelocityY = -5.9;
+  gravity = 0.21;
   maxScore = 0;
   score = 0;
 
@@ -35,7 +37,9 @@ export class Player implements IPlayer {
     this.w = w;
     this.h = h;
     this.image = new Image();
-    this.image.src = img;
+    this.image.src = left;
+    this.doodleLeft = null;
+    this.doodleRight = null;
     this.velocityY = this.initialVelocityY;
 
     // Bind the event handlers
@@ -61,9 +65,14 @@ export class Player implements IPlayer {
   moveX() {
     if (this.keys["a"]) {
       this.position.x -= SPEED;
+      this.doodleLeft = new Image();
+      this.doodleLeft.src = left;
     }
     if (this.keys["d"]) {
       this.position.x += SPEED;
+      this.doodleRight = new Image();
+
+      this.doodleRight.src = right;
     }
     this.checkBoundaries();
   }
@@ -71,6 +80,8 @@ export class Player implements IPlayer {
   moveY() {
     // initially velocityY is negative so it moves upward and after adding gravity it moves downward
     this.velocityY += this.gravity;
+    this.doodleRight = new Image();
+
     this.position.y += this.velocityY;
   }
 
