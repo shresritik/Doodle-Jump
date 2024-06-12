@@ -28,11 +28,11 @@ export class Platform implements IPlatform {
     ctx.fillStyle = this.color;
     ctx.fillRect(this.position.x, this.position.y, this.w, this.h);
   };
-  moveY = () => {
+  moveY = (velocity: number) => {
     if (this.position.y >= CANVAS_HEIGHT) {
-      this.position.y = -20;
+      this.position.y += velocity * 20;
     } else {
-      this.position.y += this.verticalDistance * SPEED;
+      this.position.y -= velocity * SPEED;
     }
   };
 }
