@@ -18,8 +18,7 @@ export class Player implements IPlayer {
   h: number;
   w: number;
   image: HTMLImageElement;
-  doodleLeft: HTMLImageElement | null;
-  doodleRight: HTMLImageElement | null;
+
   keys: TKeys = {};
   initialVelocityY = -5;
   velocityY = 12;
@@ -33,8 +32,7 @@ export class Player implements IPlayer {
     this.h = h;
     this.image = new Image();
     this.image.src = left;
-    this.doodleLeft = null;
-    this.doodleRight = null;
+
     this.velocityY = this.initialVelocityY;
 
     // Bind the event handlers
@@ -60,14 +58,14 @@ export class Player implements IPlayer {
   moveX() {
     if (this.keys["a"]) {
       this.position.x -= SPEED;
-      this.doodleLeft = new Image();
-      this.doodleLeft.src = left;
+      this.image = new Image();
+      this.image.src = left;
     }
     if (this.keys["d"]) {
       this.position.x += SPEED;
-      this.doodleRight = new Image();
+      this.image = new Image();
 
-      this.doodleRight.src = right;
+      this.image.src = right;
     }
     this.checkBoundaries();
   }
@@ -75,7 +73,6 @@ export class Player implements IPlayer {
   moveY() {
     // initially velocityY is negative so it moves upward and after adding gravity it moves downward
     this.velocityY += this.gravity;
-    this.doodleRight = new Image();
 
     this.position.y += this.velocityY;
   }
