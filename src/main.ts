@@ -1,6 +1,6 @@
-import { Player } from "./classes/Player";
+import { Player, scoreCount } from "./classes/Player";
 import { Platform } from "./classes/Platform";
-import { getRandomValue } from "./utils/utils";
+import { detectCollision, getRandomValue } from "./utils/utils";
 import bgImg from "./assets/doodlejumpbg.png";
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "./constants/constants";
 import { Enemy } from "./classes/Enemy";
@@ -14,27 +14,43 @@ canvas.height = CANVAS_HEIGHT;
 canvas.style.backgroundImage = `url("${bgImg}")`;
 canvas.style.backgroundSize = `cover`;
 
-const ctx = canvas.getContext("2d")!;
+export const ctx = canvas.getContext("2d")!;
 let player: Player;
 let gameOver = false;
 let platformArray: Platform[] = [];
 let enemyArray: Enemy[] = [];
-const enemySpawnHeight = CANVAS_HEIGHT * 0.75; // Threshold height for enemy spawning
+// const enemySpawnHeight = CANVAS_HEIGHT * 0.75; // Threshold height for enemy spawning
 
 function writeScore(ctx: CanvasRenderingContext2D) {
   ctx.fillStyle = "black";
   ctx.font = "20px sans-serif";
-  ctx.fillText(`Score: ${player.score}`, 5, 20);
+  ctx.fillText(`Score: ${scoreCount.score}`, 5, 20);
 }
 
 function gameOverFunction(ctx: CanvasRenderingContext2D) {
   ctx.fillStyle = "red";
   ctx.font = "30px sans-serif";
-  ctx.fillText(`Game over.`, CANVAS_WIDTH / 4 + 60, CANVAS_HEIGHT / 2);
+  ctx.fillText(
+    `Game over.`,
+    CANVAS_WIDTH / 4 + 60,
+    (CANVAS_HEIGHT * 3) / 4 - 200
+  );
+  let maxScore = localStorage.getItem("maxScore");
+  ctx.fillText(
+    `High Score: ${maxScore}`,
+    CANVAS_WIDTH / 2 - 80,
+    (CANVAS_HEIGHT * 3) / 4 - 300
+  );
+  ctx.fillText(
+    `Your Score: ${scoreCount.score}`,
+    CANVAS_WIDTH / 2 - 80,
+    (CANVAS_HEIGHT * 3) / 4 - 400
+  );
+
   ctx.fillText(
     `Press Space to restart`,
-    CANVAS_WIDTH / 4,
-    (CANVAS_HEIGHT * 3) / 4 - 180
+    CANVAS_WIDTH / 2 - 150,
+    (CANVAS_HEIGHT * 3) / 4 - 500
   );
 }
 
@@ -66,17 +82,19 @@ function newPlatform() {
   platformArray.push(platform1);
 }
 function newEnemy() {
-  const moveHorizontally = Math.random() < 0.2;
-  const enemy1 = new Enemy(
-    {
-      x: getRandomValue(20, CANVAS_WIDTH - 100),
-      y: 20,
-    },
-    30,
-    100,
-    moveHorizontally
-  );
-  enemyArray.push(enemy1);
+  const moveHorizontally = Math.random() < 0.1;
+  if (moveHorizontally) {
+    const enemy1 = new Enemy(
+      {
+        x: getRandomValue(20, CANVAS_WIDTH - 100),
+        y: getRandomValue(0, 50),
+      },
+      30,
+      100,
+      moveHorizontally
+    );
+    enemyArray.push(enemy1);
+  }
 }
 
 function createPlatform() {
@@ -121,16 +139,21 @@ const drawPlatform = () => {
 };
 
 const drawEnemy = () => {
-  enemyArray.forEach((enemy) => {
-    enemy.draw(ctx);
-    if (player.detectCollision(enemy)) {
-      gameOver = true;
-    }
-    enemy.moveX();
-    if (player.velocityY < 0 && player.position.y < (CANVAS_HEIGHT * 3) / 4) {
-      enemy.position.y -= player.initialVelocityY;
-    }
-  });
+  if (enemyArray.length == 0) {
+    newEnemy();
+  } else {
+    enemyArray.forEach((enemy) => {
+      enemy.draw(ctx);
+      if (player.detectCollision(enemy)) {
+        gameOver = true;
+      }
+      enemy.moveX();
+      if (player.velocityY < 0 && player.position.y < (CANVAS_HEIGHT * 3) / 4) {
+        enemy.position.y -= player.initialVelocityY;
+      }
+    });
+  }
+
   while (enemyArray.length > 0 && enemyArray[0].position.y >= CANVAS_HEIGHT) {
     enemyArray.shift();
     newEnemy();
@@ -160,7 +183,15 @@ function draw() {
   player.moveX();
   player.moveY();
   player.draw(ctx);
-
+  player.updateBullets();
+  player.bulletArray.forEach((bullet, bulletIndex) => {
+    enemyArray.forEach((enemy) => {
+      if (detectCollision(bullet, enemy)) {
+        player.bulletArray.splice(bulletIndex, 1);
+        enemyArray.shift();
+      }
+    });
+  });
   writeScore(ctx);
   requestAnimationFrame(draw);
 }
@@ -174,10 +205,11 @@ function startGame() {
   createImage();
   newEnemy();
   // createEnemy();
+  player.bulletArray = [];
   player.initialVelocityY = -5;
   player.velocityY = 12;
   player.gravity = 0.14;
-  player.score = 0;
+  scoreCount.score = 0;
   player.maxHeight = CANVAS_HEIGHT;
   draw();
 }
