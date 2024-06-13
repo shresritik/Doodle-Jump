@@ -51,8 +51,13 @@ function drawStartScreen() {
     CANVAS_WIDTH / 5,
     CANVAS_HEIGHT / 2 + 40
   );
+  ctx.fillText("Bullet: f key ", CANVAS_WIDTH / 5, CANVAS_HEIGHT / 2 + 70);
   ctx.font = "22px sans-serif";
-  ctx.fillText("Pause/Resume: p key", CANVAS_WIDTH / 5, CANVAS_HEIGHT / 2 + 70);
+  ctx.fillText(
+    "Pause/Resume: p key",
+    CANVAS_WIDTH / 5,
+    CANVAS_HEIGHT / 2 + 100
+  );
 }
 
 function drawPauseScreen() {
