@@ -4,11 +4,10 @@ import { detectCollision, getRandomValue } from "./utils/utils";
 import bgImg from "./assets/doodlejumpbg.png";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLOR } from "./constants/constants";
 import { Enemy } from "./classes/Enemy";
-
-const fallingSound = new Audio("./track/falling-sound-arcade.mp3");
-const enemyDeath = new Audio("./track/barrel-explosion.mp3");
-const jump = new Audio("./track/jump.wav");
-const jumpMonster = new Audio("./track/jumponmonster-arcade.mp3");
+const fallingSound = new Audio("/track/falling-sound-arcade.mp3");
+const enemyDeath = new Audio("/track/barrel-explosion.mp3");
+const jump = new Audio("/track/jump.wav");
+const jumpMonster = new Audio("/track/jumponmonster-arcade.mp3");
 const canvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
 
 canvas.width = CANVAS_WIDTH;
@@ -17,7 +16,6 @@ canvas.style.backgroundImage = `url("${bgImg}")`;
 canvas.style.backgroundSize = `cover`;
 
 fallingSound.volume = 0.2;
-
 const ctx = canvas.getContext("2d")!;
 let player: Player;
 let gameOver = false;

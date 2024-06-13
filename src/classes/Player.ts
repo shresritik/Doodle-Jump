@@ -4,7 +4,7 @@ import left from "../assets/blueL.png";
 import right from "../assets/blueR.png";
 import { Enemy } from "./Enemy";
 import { Bullet } from "./Bullet";
-const playerDeathByMonster = new Audio("./track/arcade-laser.mp3");
+const playerDeathByMonster = new Audio("/track/arcade-laser.mp3");
 
 interface IPlayer {
   position: { x: number; y: number };
