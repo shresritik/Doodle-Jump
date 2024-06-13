@@ -1,14 +1,14 @@
 import monsterImg from "../assets/monster.png";
-import { CANVAS_WIDTH } from "../constants/constants";
-export const SPEED = 2;
+import { CANVAS_WIDTH, SPEED } from "../constants/constants";
+
 export interface IEnemy {
   position: { x: number; y: number };
   h: number;
   w: number;
 }
+
 export class Enemy implements IEnemy {
   position: { x: number; y: number };
-
   h: number;
   w: number;
   img: HTMLImageElement;
@@ -29,14 +29,15 @@ export class Enemy implements IEnemy {
     this.moveHorizontally = moveHorizontally;
     this.directionX = 1;
   }
-  draw = (ctx: CanvasRenderingContext2D) => {
-    ctx.drawImage(this.img, this.position.x, this.position.y, this.w, this.h);
-  };
 
-  moveX() {
+  draw(ctx: CanvasRenderingContext2D) {
+    ctx.drawImage(this.img, this.position.x, this.position.y, this.w, this.h);
+  }
+
+  moveX(deltaTime: number) {
     if (this.position.x <= 0 || this.position.x + this.w > CANVAS_WIDTH) {
       this.directionX *= -1;
     }
-    this.position.x += this.directionX * SPEED;
+    this.position.x += this.directionX * SPEED * (deltaTime / 16.67); // Normalize to 60 FPS
   }
 }

@@ -1,20 +1,21 @@
-import { CANVAS_HEIGHT } from "../constants/constants";
+import { CANVAS_HEIGHT, SPEED } from "../constants/constants";
 import platformImg from "../assets/platform.png";
-export const SPEED = 2;
+
 export interface IPlatform {
   position: { x: number; y: number };
   h: number;
   w: number;
   color: string;
 }
+
 export class Platform implements IPlatform {
   position: { x: number; y: number };
-
   h: number;
   w: number;
   color: string;
   img: HTMLImageElement;
   moveHorizontally: boolean;
+
   constructor(
     position: { x: number; y: number },
     h: number,
@@ -30,22 +31,23 @@ export class Platform implements IPlatform {
     this.img.src = platformImg;
     this.moveHorizontally = moveHorizontally;
   }
-  draw = (ctx: CanvasRenderingContext2D) => {
-    // ctx.fillStyle = this.color;
-    // ctx.fillRect(this.position.x, this.position.y, this.w, this.h);
 
+  draw(ctx: CanvasRenderingContext2D) {
     ctx.drawImage(this.img, this.position.x, this.position.y, this.w, this.h);
-  };
-  moveY = (velocity: number) => {
+  }
+
+  moveY(velocity: number, deltaTime: number) {
     if (this.position.y >= CANVAS_HEIGHT) {
-      this.position.y += velocity * 20;
+      this.position.y += velocity * 20 * (deltaTime / 16.67); // Normalize to 60 FPS
     } else {
-      this.position.y -= velocity * SPEED;
+      this.position.y -= velocity * SPEED * (deltaTime / 16.67); // Normalize to 60 FPS
     }
-  };
-  moveX() {
+  }
+
+  moveX(deltaTime: number) {
     if (this.moveHorizontally) {
-      this.position.x += Math.sin(Date.now() / 500) * SPEED; // Move back and forth
+      this.position.x +=
+        Math.sin(Date.now() / 500) * SPEED * (deltaTime / 16.67); // Normalize to 60 FPS
     }
   }
 }

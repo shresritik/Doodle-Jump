@@ -1,3 +1,4 @@
+import { SPEED } from "../constants/constants";
 import { TKeys } from "./Player";
 
 export class Bullet {
@@ -9,6 +10,7 @@ export class Bullet {
   velocityY = 12;
   bullet: number | null = null;
   bulletSpeed: number | null = 0.5;
+
   constructor(position: { x: number; y: number }, h: number, w: number) {
     this.position = { x: position.x, y: position.y };
     this.w = w;
@@ -22,8 +24,7 @@ export class Bullet {
   }
 
   // Method to move the bullet
-
-  moveBulletY() {
-    this.position.y -= this.velocityY;
+  moveBulletY(deltaTime: number) {
+    this.position.y -= this.velocityY * SPEED * (deltaTime / 16.67); // Normalize to 60 FPS
   }
 }

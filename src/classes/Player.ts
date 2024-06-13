@@ -1,5 +1,5 @@
-import { CANVAS_WIDTH } from "../constants/constants";
-import { Platform, SPEED } from "./Platform";
+import { CANVAS_WIDTH, SPEED } from "../constants/constants";
+import { Platform } from "./Platform";
 import left from "../assets/blueL.png";
 import right from "../assets/blueR.png";
 import { Enemy } from "./Enemy";
@@ -17,19 +17,19 @@ export interface TKeys {
   [keys: string]: boolean;
 }
 export let scoreCount = { score: 0 };
+
 export class Player implements IPlayer {
   position: { x: number; y: number; bulletY: number };
   h: number;
   w: number;
   image: HTMLImageElement;
   keys: TKeys = {};
-  initialVelocityY = -5;
-  velocityY = 12;
-  gravity = 0.14;
+  initialVelocityY = -7;
+  velocityY = 20;
+  gravity = 0.3;
+
   maxHeight = 0;
   lastPlatform: Platform | null = null;
-  bullet: number | null = null;
-  bulletSpeed: number | null = 0.5;
   bulletArray: Bullet[] = [];
 
   constructor(position: { x: number; y: number }, h: number, w: number) {
@@ -63,6 +63,7 @@ export class Player implements IPlayer {
   draw(ctx: CanvasRenderingContext2D) {
     ctx.drawImage(this.image, this.position.x, this.position.y, this.w, this.h);
   }
+
   drawBullet() {
     const bullet = new Bullet(
       { x: this.position.x, y: this.position.y },
@@ -71,37 +72,37 @@ export class Player implements IPlayer {
     );
     this.bulletArray.push(bullet);
   }
-  updateBullets(ctx: CanvasRenderingContext2D) {
+
+  updateBullets(ctx: CanvasRenderingContext2D, deltaTime: number) {
     this.bulletArray.forEach((bullet, index) => {
-      bullet.moveBulletY();
+      bullet.moveBulletY(deltaTime);
       bullet.drawBullet(ctx);
-      // Remove bulletArray that are out of screen
+      // Remove bullets that are out of screen
       if (bullet.position.y < 0) {
         this.bulletArray.splice(index, 1);
       }
     });
   }
 
-  moveX() {
+  moveX(deltaTime: number) {
+    const movementSpeed = (SPEED * deltaTime) / 16.67; // Normalize to 60 FPS
+
     if (this.keys["a"]) {
-      this.position.x -= SPEED;
+      this.position.x -= movementSpeed;
       this.image.src = left;
     }
     if (this.keys["d"]) {
-      this.position.x += SPEED;
+      this.position.x += movementSpeed;
       this.image.src = right;
     }
 
     this.checkBoundaries();
   }
 
-  moveY() {
+  moveY(deltaTime: number) {
     // Initially velocityY is negative so it moves upward and after adding gravity it moves downward
-    this.velocityY += this.gravity;
-    this.position.y += this.velocityY;
-
-    // Update the maximum height achieved
-    // this.updateHeight();
+    this.velocityY += (this.gravity * deltaTime) / 16.67; // Normalize to 60 FPS
+    this.position.y += (this.velocityY * deltaTime) / 16.67; // Normalize to 60 FPS
   }
 
   checkBoundaries() {
@@ -121,13 +122,6 @@ export class Player implements IPlayer {
     );
   }
 
-  // updateHeight() {
-  //   // The higher the player goes, the smaller the y-coordinate
-  //   if (this.position.y < this.maxHeight) {
-  //     this.maxHeight = this.position.y;
-  //     this.score = Math.floor(Math.abs(this.maxHeight - CANVAS_HEIGHT));
-  //   }
-  // }
   updateScore(platform: Platform) {
     if (
       this.detectCollision(platform) &&
