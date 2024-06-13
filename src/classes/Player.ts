@@ -2,6 +2,7 @@ import { CANVAS_WIDTH } from "../constants/constants";
 import { Platform, SPEED } from "./Platform";
 import left from "../assets/blueL.png";
 import right from "../assets/blueR.png";
+
 interface IPlayer {
   position: { x: number; y: number };
   h: number;
@@ -18,13 +19,12 @@ export class Player implements IPlayer {
   h: number;
   w: number;
   image: HTMLImageElement;
-
   keys: TKeys = {};
   initialVelocityY = -5;
   velocityY = 12;
   gravity = 0.14;
   score = 0;
-  maxScore = 0;
+  lastPlatform: Platform | null = null;
 
   constructor(position: { x: number; y: number }, h: number, w: number) {
     this.position = { x: position.x, y: position.y };
@@ -58,22 +58,18 @@ export class Player implements IPlayer {
   moveX() {
     if (this.keys["a"]) {
       this.position.x -= SPEED;
-      this.image = new Image();
       this.image.src = left;
     }
     if (this.keys["d"]) {
       this.position.x += SPEED;
-      this.image = new Image();
-
       this.image.src = right;
     }
     this.checkBoundaries();
   }
 
   moveY() {
-    // initially velocityY is negative so it moves upward and after adding gravity it moves downward
+    // Initially velocityY is negative so it moves upward and after adding gravity it moves downward
     this.velocityY += this.gravity;
-
     this.position.y += this.velocityY;
   }
 
@@ -85,24 +81,23 @@ export class Player implements IPlayer {
     }
   }
 
-  detectCollision(b: Platform) {
+  detectCollision(platform: Platform) {
     return (
-      this.position.x < b.position.x + b.w &&
-      this.position.x + this.w > b.position.x &&
-      this.position.y < b.position.y + b.h &&
-      this.position.y + this.h > b.position.y
+      this.position.x < platform.position.x + platform.w &&
+      this.position.x + this.w > platform.position.x &&
+      this.position.y < platform.position.y + platform.h &&
+      this.position.y + this.h > platform.position.y
     );
   }
 
-  updateScore() {
-    let points = 1;
-    if (this.velocityY < 0) {
-      this.maxScore += points;
-      if (this.score < this.maxScore) {
-        this.score = this.maxScore;
-      }
-    } else if (this.velocityY >= 0) {
-      this.maxScore -= points;
+  updateScore(platform: Platform) {
+    if (
+      this.detectCollision(platform) &&
+      this.velocityY >= 0 &&
+      platform !== this.lastPlatform
+    ) {
+      this.score++;
+      this.lastPlatform = platform;
     }
   }
 }

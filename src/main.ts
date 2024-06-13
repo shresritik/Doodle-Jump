@@ -79,6 +79,7 @@ function createPlatform() {
 const drawPlatform = () => {
   platformArray.forEach((pl) => {
     pl.draw(ctx);
+    player.updateScore(pl); // Update score here
     if (player.detectCollision(pl) && player.velocityY >= 0) {
       player.velocityY = player.initialVelocityY;
     }
@@ -105,7 +106,7 @@ function draw() {
 
   if (gameOver) {
     gameOverFunction(ctx);
-    resetGame();
+    return;
   }
 
   if (player.position.y > CANVAS_HEIGHT) {
@@ -116,18 +117,12 @@ function draw() {
   drawPlatform();
   player.moveX();
   player.moveY();
-  player.updateScore();
   player.draw(ctx);
   writeScore(ctx);
   requestAnimationFrame(draw);
 }
-initialPlatform();
-createPlatform();
-createImage();
-draw();
 
 function startGame() {
-  // debugger;
   gameStarted = true;
   gameOver = false;
   platformArray = [];
@@ -138,7 +133,6 @@ function startGame() {
   player.velocityY = 12;
   player.gravity = 0.14;
   player.score = 0;
-  player.maxScore = 0;
   draw();
 }
 
@@ -151,16 +145,9 @@ startButton.addEventListener("click", () => {
 function resetGame() {
   window.addEventListener("keypress", (e: KeyboardEvent) => {
     if (e.code === "Space" && gameOver) {
-      // startGame();
-      if (e.code == "Space" && gameOver) {
-        platformArray.length = 0;
-
-        initialPlatform();
-
-        createImage();
-        gameOver = false;
-        createPlatform();
-      }
+      startGame();
     }
   });
 }
+
+resetGame();
