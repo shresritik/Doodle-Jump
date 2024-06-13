@@ -21,18 +21,13 @@ export class Player implements IPlayer {
   doodleLeft: HTMLImageElement | null;
   doodleRight: HTMLImageElement | null;
   keys: TKeys = {};
-  velocityY = 0;
-  initialVelocityY = -5.9;
-  gravity = 0.21;
-  maxScore = 0;
+  initialVelocityY = -5;
+  velocityY = 12;
+  gravity = 0.14;
   score = 0;
+  maxScore = 0;
 
-  constructor(
-    position: { x: number; y: number },
-    h: number,
-    w: number,
-    img: string
-  ) {
+  constructor(position: { x: number; y: number }, h: number, w: number) {
     this.position = { x: position.x, y: position.y };
     this.w = w;
     this.h = h;

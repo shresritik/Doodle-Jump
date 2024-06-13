@@ -35,10 +35,14 @@ export class Platform implements IPlatform {
     }
   };
   moveX = () => {
-    if (this.position.x < 0) {
-      this.position.x = CANVAS_WIDTH - this.w;
-    } else if (this.position.x + this.w > CANVAS_WIDTH) {
-      this.position.x = 0;
+    if (this.position.x > 0) {
+      {
+        this.position.x -= 0.3;
+        console.log(this.position.x);
+      }
+    } else if (this.position.x < -100) {
+      this.position.x += CANVAS_WIDTH - this.w;
+      console.log(this.position.x);
     }
   };
 }

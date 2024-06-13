@@ -2,19 +2,21 @@ import { Player } from "./classes/Player";
 import { Platform } from "./classes/Platform";
 import { getRandomValue } from "./utils/utils";
 import bgImg from "./assets/doodlejumpbg.png";
-import blueL from "./assets/blueL.png";
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "./constants/constants.ts";
 
 const canvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
+const startButton = document.getElementById("startButton") as HTMLButtonElement;
+const btnWrapper = document.querySelector(".btn-wrapper") as HTMLDivElement;
 
 canvas.width = CANVAS_WIDTH;
 canvas.height = CANVAS_HEIGHT;
 canvas.style.backgroundImage = `url("${bgImg}")`;
-canvas.style.backgroundPosition = `cover`;
+canvas.style.backgroundSize = `cover`;
 
 const ctx = canvas.getContext("2d")!;
 let player: Player;
 let gameOver = false;
+let gameStarted = false;
 let platformArray: Platform[] = [];
 
 function writeScore(ctx: CanvasRenderingContext2D) {
@@ -22,16 +24,17 @@ function writeScore(ctx: CanvasRenderingContext2D) {
   ctx.font = "20px sans-serif";
   ctx.fillText(`Score: ${player.score}`, 5, 20);
 }
+
 function gameOverFunction(ctx: CanvasRenderingContext2D) {
   ctx.fillStyle = "black";
   ctx.font = "20px sans-serif";
-  if (gameOver)
-    ctx.fillText(
-      `Gameover Press Space to restart`,
-      CANVAS_WIDTH / 7,
-      (CANVAS_HEIGHT * 7) / 8
-    );
+  ctx.fillText(
+    `Game over. Press Space to restart`,
+    CANVAS_WIDTH / 4,
+    CANVAS_HEIGHT / 2
+  );
 }
+
 function initialPlatform() {
   const platform1 = new Platform(
     {
@@ -42,25 +45,24 @@ function initialPlatform() {
     100,
     "red"
   );
-
   platformArray.push(platform1);
 }
+
 function newPlatform() {
   const platform1 = new Platform(
     {
-      x: getRandomValue(20, (CANVAS_WIDTH * 3) / 4),
-      y: 100,
+      x: getRandomValue(20, CANVAS_WIDTH - 100),
+      y: 20,
     },
     10,
     100,
-    "green"
+    "blue"
   );
-
   platformArray.push(platform1);
 }
 
 function createPlatform() {
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < 10; i++) {
     const platform = new Platform(
       {
         x: getRandomValue(20, CANVAS_WIDTH - 50),
@@ -89,18 +91,13 @@ const drawPlatform = () => {
     platformArray.length > 0 &&
     platformArray[0].position.y >= CANVAS_HEIGHT
   ) {
-    platformArray.splice(0, 1);
+    platformArray.shift();
     newPlatform();
   }
 };
 
 const createImage = () => {
-  player = new Player(
-    { x: CANVAS_WIDTH / 2, y: CANVAS_HEIGHT - 150 },
-    50,
-    60,
-    blueL
-  );
+  player = new Player({ x: CANVAS_WIDTH / 2, y: CANVAS_HEIGHT - 150 }, 50, 60);
 };
 
 function draw() {
@@ -108,13 +105,13 @@ function draw() {
 
   if (gameOver) {
     gameOverFunction(ctx);
-
     resetGame();
   }
 
   if (player.position.y > CANVAS_HEIGHT) {
     gameOver = true;
   }
+
   ctx.beginPath();
   drawPlatform();
   player.moveX();
@@ -128,16 +125,42 @@ initialPlatform();
 createPlatform();
 createImage();
 draw();
+
+function startGame() {
+  // debugger;
+  gameStarted = true;
+  gameOver = false;
+  platformArray = [];
+  initialPlatform();
+  createPlatform();
+  createImage();
+  player.initialVelocityY = -5;
+  player.velocityY = 12;
+  player.gravity = 0.14;
+  player.score = 0;
+  player.maxScore = 0;
+  draw();
+}
+
+startButton.addEventListener("click", () => {
+  startGame();
+  btnWrapper.style.display = "none";
+  startButton.style.display = "none";
+});
+
 function resetGame() {
   window.addEventListener("keypress", (e: KeyboardEvent) => {
-    if (e.code == "Space" && gameOver) {
-      platformArray.length = 0;
+    if (e.code === "Space" && gameOver) {
+      // startGame();
+      if (e.code == "Space" && gameOver) {
+        platformArray.length = 0;
 
-      initialPlatform();
+        initialPlatform();
 
-      createImage();
-      gameOver = false;
-      createPlatform();
+        createImage();
+        gameOver = false;
+        createPlatform();
+      }
     }
   });
 }
