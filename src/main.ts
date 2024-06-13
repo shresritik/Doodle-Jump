@@ -64,7 +64,7 @@ function newPlatform() {
   platformArray.push(platform1);
 }
 function newEnemy() {
-  const moveHorizontally = Math.random() < 0.3;
+  const moveHorizontally = Math.random() < 0.2;
   const enemy1 = new Enemy(
     {
       x: getRandomValue(20, CANVAS_WIDTH - 100),
@@ -75,22 +75,6 @@ function newEnemy() {
     moveHorizontally
   );
   enemyArray.push(enemy1);
-}
-
-function createEnemy() {
-  for (let i = 0; i < 2; i++) {
-    const moveHorizontally = Math.random() < 0.2;
-    const newEnemy = new Enemy(
-      {
-        x: getRandomValue(20, CANVAS_WIDTH - 100),
-        y: -50,
-      },
-      30,
-      100,
-      moveHorizontally
-    );
-    enemyArray.push(newEnemy);
-  }
 }
 
 function createPlatform() {
@@ -137,21 +121,18 @@ const drawPlatform = () => {
 const drawEnemy = () => {
   enemyArray.forEach((enemy) => {
     enemy.draw(ctx);
-    // if (player.detectCollision(enemy)) {
-    //   gameOver = true;
-    // }
-    // if (enemy.moveHorizontally) {
+    if (player.detectCollision(enemy)) {
+      gameOver = true;
+    }
     enemy.moveX();
-    // }
-    // if (player.velocityY < 0 && player.position.y < (CANVAS_HEIGHT * 3) / 4) {
-    // enemy.position.y -= player.initialVelocityY;
-    // }
+    if (player.velocityY < 0 && player.position.y < (CANVAS_HEIGHT * 3) / 4) {
+      enemy.position.y -= player.initialVelocityY;
+    }
   });
-
-  // while (enemyArray.length > 0 && enemyArray[0].position.y >= CANVAS_HEIGHT) {
-  //   enemyArray.shift();
-  //   newEnemy();
-  // }
+  while (enemyArray.length > 0 && enemyArray[0].position.y >= CANVAS_HEIGHT) {
+    enemyArray.shift();
+    newEnemy();
+  }
 };
 
 const createImage = () => {
@@ -172,6 +153,7 @@ function draw() {
 
   ctx.beginPath();
   drawPlatform();
+  drawEnemy();
 
   player.moveX();
   player.moveY();
@@ -187,6 +169,8 @@ function startGame() {
   initialPlatform();
   createPlatform();
   createImage();
+  newEnemy();
+  // createEnemy();
   player.initialVelocityY = -5;
   player.velocityY = 12;
   player.gravity = 0.14;
