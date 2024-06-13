@@ -19,19 +19,21 @@ canvas.style.backgroundImage = `url("${bgImg}")`;
 canvas.style.backgroundSize = `cover`;
 fallingSound.volume = 0.2;
 
-export const ctx = canvas.getContext("2d")!;
+const ctx = canvas.getContext("2d")!;
 let player: Player;
 let gameOver = false;
 let platformArray: Platform[] = [];
 let enemyArray: Enemy[] = [];
 
 function writeScore(ctx: CanvasRenderingContext2D) {
-  ctx.fillStyle = "black";
+  ctx.fillStyle = "red";
   ctx.font = "20px sans-serif";
   ctx.fillText(`Score: ${scoreCount.score}`, 5, 20);
 }
 
 function gameOverFunction(ctx: CanvasRenderingContext2D) {
+  ctx.fillStyle = "red";
+  ctx.font = "20px sans-serif";
   ctx.fillText(
     `Game Over`,
     CANVAS_WIDTH / 4 + 60,
@@ -51,8 +53,17 @@ function gameOverFunction(ctx: CanvasRenderingContext2D) {
 
   ctx.fillText(
     `Press Space to restart`,
-    CANVAS_WIDTH / 2 - 150,
+    CANVAS_WIDTH / 2 - 100,
     (CANVAS_HEIGHT * 3) / 4 - 500
+  );
+}
+function writeGameStart(ctx: CanvasRenderingContext2D) {
+  ctx.fillStyle = "red";
+  ctx.font = "20px sans-serif";
+  ctx.fillText(
+    `Start Game`,
+    CANVAS_WIDTH / 4 + 60,
+    (CANVAS_HEIGHT * 3) / 4 - 200
   );
 }
 
@@ -171,37 +182,40 @@ const createImage = () => {
 
 function draw() {
   ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-
   if (gameOver) {
     gameOverFunction(ctx);
     return;
   }
+  if (!gameOver) {
+    writeGameStart(ctx);
 
-  if (player.position.y > CANVAS_HEIGHT) {
-    fallingSound.play();
+    if (player.position.y > CANVAS_HEIGHT) {
+      fallingSound.play();
 
-    gameOver = true;
+      gameOver = true;
+    }
+
+    ctx.beginPath();
+    drawPlatform();
+    drawEnemy();
+
+    player.moveX();
+    player.moveY();
+    player.draw(ctx);
+    player.updateBullets(ctx);
+
+    player.bulletArray.forEach((bullet, bulletIndex) => {
+      enemyArray.forEach((enemy) => {
+        if (detectCollision(bullet, enemy)) {
+          player.bulletArray.splice(bulletIndex, 1);
+          enemyArray.shift();
+          enemyDeath.play();
+        }
+      });
+    });
+    writeScore(ctx);
   }
 
-  ctx.beginPath();
-  drawPlatform();
-  drawEnemy();
-
-  player.moveX();
-  player.moveY();
-  player.draw(ctx);
-  player.updateBullets();
-
-  player.bulletArray.forEach((bullet, bulletIndex) => {
-    enemyArray.forEach((enemy) => {
-      if (detectCollision(bullet, enemy)) {
-        player.bulletArray.splice(bulletIndex, 1);
-        enemyArray.shift();
-        enemyDeath.play();
-      }
-    });
-  });
-  writeScore(ctx);
   requestAnimationFrame(draw);
 }
 

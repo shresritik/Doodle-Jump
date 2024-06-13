@@ -1,4 +1,3 @@
-import { ctx } from "../main";
 import { TKeys } from "./Player";
 
 export class Bullet {
@@ -17,7 +16,7 @@ export class Bullet {
     this.velocityY = 1.5;
   }
 
-  drawBullet() {
+  drawBullet(ctx: CanvasRenderingContext2D) {
     ctx.fillStyle = "red";
     ctx.fillRect(this.position.x, this.position.y, 10, 8);
   }
