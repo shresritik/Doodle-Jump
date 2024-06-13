@@ -3,7 +3,6 @@ import { Platform } from "./classes/Platform";
 import { getRandomValue } from "./utils/utils";
 import bgImg from "./assets/doodlejumpbg.png";
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "./constants/constants";
-import { Enemy } from "./classes/Enemy";
 
 const canvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
 const startButton = document.getElementById("startButton") as HTMLButtonElement;
@@ -18,8 +17,6 @@ const ctx = canvas.getContext("2d")!;
 let player: Player;
 let gameOver = false;
 let platformArray: Platform[] = [];
-let enemyArray: Enemy[] = [];
-const enemySpawnHeight = CANVAS_HEIGHT * 0.75; // Threshold height for enemy spawning
 
 function writeScore(ctx: CanvasRenderingContext2D) {
   ctx.fillStyle = "black";
@@ -66,39 +63,6 @@ function newPlatform() {
   platformArray.push(platform1);
 }
 
-function initializeEnemy() {
-  const moveHorizontally = Math.random() < 0.3;
-  if (moveHorizontally) {
-    const enemy1 = new Enemy(
-      {
-        x: getRandomValue(20, CANVAS_WIDTH - 50),
-        y: 100,
-      },
-      30,
-      100,
-      moveHorizontally
-    );
-    enemyArray.push(enemy1);
-  }
-}
-
-function createEnemy() {
-  for (let i = 0; i < 10; i++) {
-    const moveHorizontally = Math.random() < 0.2;
-    if (moveHorizontally) {
-      const newEnemy = new Enemy(
-        {
-          x: getRandomValue(20, CANVAS_WIDTH - 100),
-          y: CANVAS_HEIGHT - 250 - i * 80,
-        },
-        30,
-        100
-      );
-      enemyArray.push(newEnemy);
-    }
-  }
-}
-
 function createPlatform() {
   for (let i = 0; i < 10; i++) {
     const moveHorizontally = Math.random() < 0.3;
@@ -140,25 +104,6 @@ const drawPlatform = () => {
   }
 };
 
-const drawEnemy = () => {
-  enemyArray.forEach((enemy) => {
-    enemy.draw(ctx);
-    if (player.detectCollision(enemy)) {
-      gameOver = true;
-    } else if (enemy.moveHorizontally) {
-      enemy.moveX();
-    }
-    if (player.velocityY < 0 && player.position.y < (CANVAS_HEIGHT * 3) / 4) {
-      enemy.position.y -= player.initialVelocityY;
-    }
-  });
-
-  while (enemyArray.length > 0 && enemyArray[0].position.y >= CANVAS_HEIGHT) {
-    enemyArray.shift();
-    initializeEnemy();
-  }
-};
-
 const createImage = () => {
   player = new Player({ x: CANVAS_WIDTH / 2, y: CANVAS_HEIGHT - 150 }, 50, 60);
 };
@@ -178,10 +123,6 @@ function draw() {
   ctx.beginPath();
   drawPlatform();
 
-  if (player.position.y < enemySpawnHeight) {
-    drawEnemy();
-  }
-
   player.moveX();
   player.moveY();
   player.draw(ctx);
@@ -193,11 +134,9 @@ function draw() {
 function startGame() {
   gameOver = false;
   platformArray = [];
-  enemyArray = [];
   initialPlatform();
   createPlatform();
   createImage();
-  createEnemy();
   player.initialVelocityY = -5;
   player.velocityY = 12;
   player.gravity = 0.14;
