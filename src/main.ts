@@ -5,6 +5,10 @@ import bgImg from "./assets/doodlejumpbg.png";
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "./constants/constants";
 import { Enemy } from "./classes/Enemy";
 
+const fallingSound = new Audio("./track/falling-sound-arcade.mp3");
+const enemyDeath = new Audio("./track/barrel-explosion.mp3");
+const jump = new Audio("./track/jump.wav");
+const jumpMonster = new Audio("./track/jumponmonster-arcade.mp3");
 const canvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
 const startButton = document.getElementById("startButton") as HTMLButtonElement;
 const btnWrapper = document.querySelector(".btn-wrapper") as HTMLDivElement;
@@ -13,13 +17,13 @@ canvas.width = CANVAS_WIDTH;
 canvas.height = CANVAS_HEIGHT;
 canvas.style.backgroundImage = `url("${bgImg}")`;
 canvas.style.backgroundSize = `cover`;
+fallingSound.volume = 0.2;
 
 export const ctx = canvas.getContext("2d")!;
 let player: Player;
 let gameOver = false;
 let platformArray: Platform[] = [];
 let enemyArray: Enemy[] = [];
-// const enemySpawnHeight = CANVAS_HEIGHT * 0.75; // Threshold height for enemy spawning
 
 function writeScore(ctx: CanvasRenderingContext2D) {
   ctx.fillStyle = "black";
@@ -28,10 +32,8 @@ function writeScore(ctx: CanvasRenderingContext2D) {
 }
 
 function gameOverFunction(ctx: CanvasRenderingContext2D) {
-  ctx.fillStyle = "red";
-  ctx.font = "30px sans-serif";
   ctx.fillText(
-    `Game over.`,
+    `Game Over`,
     CANVAS_WIDTH / 4 + 60,
     (CANVAS_HEIGHT * 3) / 4 - 200
   );
@@ -119,6 +121,7 @@ const drawPlatform = () => {
     pl.draw(ctx);
     player.updateScore(pl);
     if (player.detectCollision(pl) && player.velocityY >= 0) {
+      jump.play();
       player.velocityY = player.initialVelocityY;
     }
     if (player.velocityY < 0 && player.position.y < (CANVAS_HEIGHT * 3) / 4) {
@@ -145,6 +148,8 @@ const drawEnemy = () => {
     enemyArray.forEach((enemy) => {
       enemy.draw(ctx);
       if (player.detectCollision(enemy)) {
+        jumpMonster.play();
+        // enemyDeath.play();
         gameOver = true;
       }
       enemy.moveX();
@@ -173,6 +178,8 @@ function draw() {
   }
 
   if (player.position.y > CANVAS_HEIGHT) {
+    fallingSound.play();
+
     gameOver = true;
   }
 
@@ -184,11 +191,13 @@ function draw() {
   player.moveY();
   player.draw(ctx);
   player.updateBullets();
+
   player.bulletArray.forEach((bullet, bulletIndex) => {
     enemyArray.forEach((enemy) => {
       if (detectCollision(bullet, enemy)) {
         player.bulletArray.splice(bulletIndex, 1);
         enemyArray.shift();
+        enemyDeath.play();
       }
     });
   });
@@ -204,7 +213,7 @@ function startGame() {
   createPlatform();
   createImage();
   newEnemy();
-  // createEnemy();
+
   player.bulletArray = [];
   player.initialVelocityY = -5;
   player.velocityY = 12;
@@ -227,5 +236,4 @@ function resetGame() {
     }
   });
 }
-
 resetGame();

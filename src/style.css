@@ -33,3 +33,6 @@ body {
 .header {
   color: white;
 }
+button {
+  cursor: pointer;
+}
