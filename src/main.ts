@@ -1,3 +1,4 @@
+import "./style.css";
 import { Player } from "./classes/Player";
 import { Platform } from "./classes/Platform";
 import { getRandomValue } from "./utils/utils";
