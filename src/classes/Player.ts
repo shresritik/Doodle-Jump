@@ -1,4 +1,4 @@
-import { CANVAS_WIDTH } from "../constants/constants";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../constants/constants";
 import { Platform, SPEED } from "./Platform";
 import left from "../assets/blueL.png";
 import right from "../assets/blueR.png";
@@ -24,7 +24,7 @@ export class Player implements IPlayer {
   velocityY = 12;
   gravity = 0.14;
   score = 0;
-  lastPlatform: Platform | null = null;
+  maxHeight = 0;
 
   constructor(position: { x: number; y: number }, h: number, w: number) {
     this.position = { x: position.x, y: position.y };
@@ -71,6 +71,9 @@ export class Player implements IPlayer {
     // Initially velocityY is negative so it moves upward and after adding gravity it moves downward
     this.velocityY += this.gravity;
     this.position.y += this.velocityY;
+
+    // Update the maximum height achieved
+    this.updateHeight();
   }
 
   checkBoundaries() {
@@ -90,14 +93,11 @@ export class Player implements IPlayer {
     );
   }
 
-  updateScore(platform: Platform) {
-    if (
-      this.detectCollision(platform) &&
-      this.velocityY >= 0 &&
-      platform !== this.lastPlatform
-    ) {
-      this.score++;
-      this.lastPlatform = platform;
+  updateHeight() {
+    // The higher the player goes, the smaller the y-coordinate
+    if (this.position.y < this.maxHeight) {
+      this.maxHeight = this.position.y;
+      this.score = Math.floor(Math.abs(this.maxHeight - CANVAS_HEIGHT)) - 236;
     }
   }
 }

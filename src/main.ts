@@ -16,7 +16,7 @@ canvas.style.backgroundSize = `cover`;
 const ctx = canvas.getContext("2d")!;
 let player: Player;
 let gameOver = false;
-let gameStarted = false;
+// let gameStarted = false;
 let platformArray: Platform[] = [];
 
 function writeScore(ctx: CanvasRenderingContext2D) {
@@ -26,12 +26,13 @@ function writeScore(ctx: CanvasRenderingContext2D) {
 }
 
 function gameOverFunction(ctx: CanvasRenderingContext2D) {
-  ctx.fillStyle = "black";
-  ctx.font = "20px sans-serif";
+  ctx.fillStyle = "red";
+  ctx.font = "30px sans-serif";
+  ctx.fillText(`Game over.`, CANVAS_WIDTH / 4 + 60, CANVAS_HEIGHT / 2);
   ctx.fillText(
-    `Game over. Press Space to restart`,
+    `Press Space to restart`,
     CANVAS_WIDTH / 4,
-    CANVAS_HEIGHT / 2
+    (CANVAS_HEIGHT * 3) / 4 - 180
   );
 }
 
@@ -41,7 +42,7 @@ function initialPlatform() {
       x: CANVAS_WIDTH / 2,
       y: CANVAS_HEIGHT - 150,
     },
-    10,
+    30,
     100,
     "red"
   );
@@ -54,7 +55,7 @@ function newPlatform() {
       x: getRandomValue(20, CANVAS_WIDTH - 100),
       y: 20,
     },
-    10,
+    30,
     100,
     "blue"
   );
@@ -68,7 +69,7 @@ function createPlatform() {
         x: getRandomValue(20, CANVAS_WIDTH - 50),
         y: CANVAS_HEIGHT - 250 - i * 80,
       },
-      10,
+      30,
       100,
       "green"
     );
@@ -79,7 +80,6 @@ function createPlatform() {
 const drawPlatform = () => {
   platformArray.forEach((pl) => {
     pl.draw(ctx);
-    player.updateScore(pl); // Update score here
     if (player.detectCollision(pl) && player.velocityY >= 0) {
       player.velocityY = player.initialVelocityY;
     }
@@ -123,7 +123,7 @@ function draw() {
 }
 
 function startGame() {
-  gameStarted = true;
+  // gameStarted = true;
   gameOver = false;
   platformArray = [];
   initialPlatform();
@@ -133,6 +133,7 @@ function startGame() {
   player.velocityY = 12;
   player.gravity = 0.14;
   player.score = 0;
+  player.maxHeight = CANVAS_HEIGHT;
   draw();
 }
 
