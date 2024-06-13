@@ -3,6 +3,7 @@ import { Platform, SPEED } from "./Platform";
 import left from "../assets/blueL.png";
 import right from "../assets/blueR.png";
 import { Enemy } from "./Enemy";
+import { Bullet } from "./Bullet";
 
 interface IPlayer {
   position: { x: number; y: number };
@@ -10,13 +11,13 @@ interface IPlayer {
   w: number;
   image: HTMLImageElement;
 }
-
-interface TKeys {
+let maxScore: number = 0;
+export interface TKeys {
   [keys: string]: boolean;
 }
-
+export let scoreCount = { score: 0 };
 export class Player implements IPlayer {
-  position: { x: number; y: number };
+  position: { x: number; y: number; bulletY: number };
   h: number;
   w: number;
   image: HTMLImageElement;
@@ -24,23 +25,29 @@ export class Player implements IPlayer {
   initialVelocityY = -5;
   velocityY = 12;
   gravity = 0.14;
-  score = 0;
   maxHeight = 0;
   lastPlatform: Platform | null = null;
+  bullet: number | null = null;
+  bulletSpeed: number | null = 0.5;
+  bulletArray: Bullet[] = [];
+
   constructor(position: { x: number; y: number }, h: number, w: number) {
-    this.position = { x: position.x, y: position.y };
+    this.position = { x: position.x, y: position.y, bulletY: position.y };
     this.w = w;
     this.h = h;
     this.image = new Image();
     this.image.src = left;
-
     this.velocityY = this.initialVelocityY;
-
     this.keyDownHandler = this.keyDownHandler.bind(this);
     this.keyUpHandler = this.keyUpHandler.bind(this);
 
     document.addEventListener("keydown", this.keyDownHandler);
     document.addEventListener("keyup", this.keyUpHandler);
+    document.addEventListener("keypress", (e) => {
+      if (e.key == "f") {
+        this.drawBullet();
+      }
+    });
   }
 
   keyDownHandler(e: KeyboardEvent) {
@@ -54,6 +61,24 @@ export class Player implements IPlayer {
   draw(ctx: CanvasRenderingContext2D) {
     ctx.drawImage(this.image, this.position.x, this.position.y, this.w, this.h);
   }
+  drawBullet() {
+    const bullet = new Bullet(
+      { x: this.position.x, y: this.position.y },
+      20,
+      30
+    );
+    this.bulletArray.push(bullet);
+  }
+  updateBullets() {
+    this.bulletArray.forEach((bullet, index) => {
+      bullet.moveBulletY();
+      bullet.drawBullet();
+      // Remove bulletArray that are out of screen
+      if (bullet.position.y < 0) {
+        this.bulletArray.splice(index, 1);
+      }
+    });
+  }
 
   moveX() {
     if (this.keys["a"]) {
@@ -63,6 +88,8 @@ export class Player implements IPlayer {
     if (this.keys["d"]) {
       this.position.x += SPEED;
       this.image.src = right;
+    }
+    if (this.keys["f"]) {
     }
     this.checkBoundaries();
   }
@@ -84,7 +111,7 @@ export class Player implements IPlayer {
     }
   }
 
-  detectCollision(platform: Platform | Enemy) {
+  detectCollision(platform: Platform | Enemy | Bullet) {
     return (
       this.position.x < platform.position.x + platform.w &&
       this.position.x + this.w > platform.position.x &&
@@ -106,8 +133,13 @@ export class Player implements IPlayer {
       this.velocityY >= 0 &&
       platform !== this.lastPlatform
     ) {
-      this.score++;
+      scoreCount.score++;
       this.lastPlatform = platform;
+
+      if (maxScore < scoreCount.score) {
+        maxScore = scoreCount.score;
+        localStorage.setItem("maxScore", JSON.stringify(maxScore));
+      }
     }
   }
 }
