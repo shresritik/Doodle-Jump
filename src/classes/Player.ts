@@ -71,10 +71,10 @@ export class Player implements IPlayer {
     );
     this.bulletArray.push(bullet);
   }
-  updateBullets() {
+  updateBullets(ctx: CanvasRenderingContext2D) {
     this.bulletArray.forEach((bullet, index) => {
       bullet.moveBulletY();
-      bullet.drawBullet();
+      bullet.drawBullet(ctx);
       // Remove bulletArray that are out of screen
       if (bullet.position.y < 0) {
         this.bulletArray.splice(index, 1);
