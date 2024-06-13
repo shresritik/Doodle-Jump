@@ -50,6 +50,7 @@ function initialPlatform() {
 }
 
 function newPlatform() {
+  const moveHorizontally = Math.random() < 0.3;
   const platform1 = new Platform(
     {
       x: getRandomValue(20, CANVAS_WIDTH - 100),
@@ -57,13 +58,15 @@ function newPlatform() {
     },
     30,
     100,
-    "blue"
+    "blue",
+    moveHorizontally
   );
   platformArray.push(platform1);
 }
 
 function createPlatform() {
   for (let i = 0; i < 10; i++) {
+    const moveHorizontally = Math.random() < 0.3;
     const platform = new Platform(
       {
         x: getRandomValue(20, CANVAS_WIDTH - 50),
@@ -71,7 +74,8 @@ function createPlatform() {
       },
       30,
       100,
-      "green"
+      "green",
+      moveHorizontally
     );
     platformArray.push(platform);
   }
@@ -80,11 +84,15 @@ function createPlatform() {
 const drawPlatform = () => {
   platformArray.forEach((pl) => {
     pl.draw(ctx);
+    player.updateScore(pl);
     if (player.detectCollision(pl) && player.velocityY >= 0) {
       player.velocityY = player.initialVelocityY;
     }
     if (player.velocityY < 0 && player.position.y < (CANVAS_HEIGHT * 3) / 4) {
       pl.position.y -= player.initialVelocityY;
+    }
+    if (pl.moveHorizontally) {
+      pl.moveX();
     }
   });
 

@@ -25,7 +25,7 @@ export class Player implements IPlayer {
   gravity = 0.14;
   score = 0;
   maxHeight = 0;
-
+  lastPlatform: Platform | null = null;
   constructor(position: { x: number; y: number }, h: number, w: number) {
     this.position = { x: position.x, y: position.y };
     this.w = w;
@@ -35,7 +35,6 @@ export class Player implements IPlayer {
 
     this.velocityY = this.initialVelocityY;
 
-    // Bind the event handlers
     this.keyDownHandler = this.keyDownHandler.bind(this);
     this.keyUpHandler = this.keyUpHandler.bind(this);
 
@@ -73,7 +72,7 @@ export class Player implements IPlayer {
     this.position.y += this.velocityY;
 
     // Update the maximum height achieved
-    this.updateHeight();
+    // this.updateHeight();
   }
 
   checkBoundaries() {
@@ -93,11 +92,21 @@ export class Player implements IPlayer {
     );
   }
 
-  updateHeight() {
-    // The higher the player goes, the smaller the y-coordinate
-    if (this.position.y < this.maxHeight) {
-      this.maxHeight = this.position.y;
-      this.score = Math.floor(Math.abs(this.maxHeight - CANVAS_HEIGHT)) - 236;
+  // updateHeight() {
+  //   // The higher the player goes, the smaller the y-coordinate
+  //   if (this.position.y < this.maxHeight) {
+  //     this.maxHeight = this.position.y;
+  //     this.score = Math.floor(Math.abs(this.maxHeight - CANVAS_HEIGHT));
+  //   }
+  // }
+  updateScore(platform: Platform) {
+    if (
+      this.detectCollision(platform) &&
+      this.velocityY >= 0 &&
+      platform !== this.lastPlatform
+    ) {
+      this.score++;
+      this.lastPlatform = platform;
     }
   }
 }
