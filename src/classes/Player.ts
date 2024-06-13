@@ -121,7 +121,7 @@ export class Player implements IPlayer {
       this.position.y + this.h > platform.position.y
     );
   }
-
+  // if the player is in new platform and is not bouncing than increase score
   updateScore(platform: Platform) {
     if (
       this.detectCollision(platform) &&

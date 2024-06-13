@@ -1,5 +1,6 @@
 import { CANVAS_HEIGHT, SPEED } from "../constants/constants";
 import platformImg from "../assets/platform.png";
+import { ctx } from "../components/canvas";
 
 export interface IPlatform {
   position: { x: number; y: number };
@@ -32,7 +33,7 @@ export class Platform implements IPlatform {
     this.moveHorizontally = moveHorizontally;
   }
 
-  draw(ctx: CanvasRenderingContext2D) {
+  draw() {
     ctx.drawImage(this.img, this.position.x, this.position.y, this.w, this.h);
   }
 
