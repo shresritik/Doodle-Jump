@@ -4,6 +4,7 @@ import left from "../assets/blueL.png";
 import right from "../assets/blueR.png";
 import { Enemy } from "./Enemy";
 import { Bullet } from "./Bullet";
+const playerDeathByMonster = new Audio("./track/arcade-laser.mp3");
 
 interface IPlayer {
   position: { x: number; y: number };
@@ -45,6 +46,7 @@ export class Player implements IPlayer {
     document.addEventListener("keyup", this.keyUpHandler);
     document.addEventListener("keypress", (e) => {
       if (e.key == "f") {
+        playerDeathByMonster.play();
         this.drawBullet();
       }
     });
@@ -89,8 +91,7 @@ export class Player implements IPlayer {
       this.position.x += SPEED;
       this.image.src = right;
     }
-    if (this.keys["f"]) {
-    }
+
     this.checkBoundaries();
   }
 
