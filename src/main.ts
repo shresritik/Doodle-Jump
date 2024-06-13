@@ -2,7 +2,7 @@ import { Player, scoreCount } from "./classes/Player";
 import { Platform } from "./classes/Platform";
 import { detectCollision, getRandomValue } from "./utils/utils";
 import bgImg from "./assets/doodlejumpbg.png";
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from "./constants/constants";
+import { CANVAS_HEIGHT, CANVAS_WIDTH, COLOR } from "./constants/constants";
 import { Enemy } from "./classes/Enemy";
 
 const fallingSound = new Audio("./track/falling-sound-arcade.mp3");
@@ -10,13 +10,12 @@ const enemyDeath = new Audio("./track/barrel-explosion.mp3");
 const jump = new Audio("./track/jump.wav");
 const jumpMonster = new Audio("./track/jumponmonster-arcade.mp3");
 const canvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
-const startButton = document.getElementById("startButton") as HTMLButtonElement;
-const btnWrapper = document.querySelector(".btn-wrapper") as HTMLDivElement;
 
 canvas.width = CANVAS_WIDTH;
 canvas.height = CANVAS_HEIGHT;
 canvas.style.backgroundImage = `url("${bgImg}")`;
 canvas.style.backgroundSize = `cover`;
+
 fallingSound.volume = 0.2;
 
 const ctx = canvas.getContext("2d")!;
@@ -25,45 +24,71 @@ let gameOver = false;
 let platformArray: Platform[] = [];
 let enemyArray: Enemy[] = [];
 
+enum GameState {
+  Start,
+  Playing,
+  GameOver,
+}
+
+let currentState: GameState = GameState.Start;
+let isPaused: boolean = false;
+let lastFrameTime = performance.now();
+
 function writeScore(ctx: CanvasRenderingContext2D) {
   ctx.fillStyle = "red";
-  ctx.font = "20px sans-serif";
-  ctx.fillText(`Score: ${scoreCount.score}`, 5, 20);
+  ctx.font = "30px sans-serif";
+  ctx.fillText(`Score: ${scoreCount.score}`, 10, 30);
+}
+function drawStartScreen() {
+  ctx.fillStyle = "#F7F0EA";
+  ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  ctx.fillStyle = "red";
+  ctx.font = "40px sans-serif";
+  ctx.fillText("Doodle Jump", CANVAS_WIDTH / 5, CANVAS_HEIGHT / 2 - 80);
+  ctx.font = "30px sans-serif";
+  ctx.fillText("Press Space to Start", CANVAS_WIDTH / 5, CANVAS_HEIGHT / 2);
+  ctx.font = "22px sans-serif";
+  ctx.fillText(
+    "Move Left: a key. Move Right:d key",
+    CANVAS_WIDTH / 5,
+    CANVAS_HEIGHT / 2 + 40
+  );
+  ctx.font = "22px sans-serif";
+  ctx.fillText("Pause/Resume: p key", CANVAS_WIDTH / 5, CANVAS_HEIGHT / 2 + 70);
+}
+
+function drawPauseScreen() {
+  ctx.fillStyle = COLOR;
+  ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  ctx.fillStyle = "red";
+  ctx.font = "30px sans-serif";
+  ctx.fillText("Game Paused", CANVAS_WIDTH / 4, CANVAS_HEIGHT / 2);
+  ctx.fillText("Press P to Resume", CANVAS_WIDTH / 4, CANVAS_HEIGHT / 2 + 50);
 }
 
 function gameOverFunction(ctx: CanvasRenderingContext2D) {
+  ctx.fillStyle = COLOR;
+  ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
   ctx.fillStyle = "red";
-  ctx.font = "20px sans-serif";
-  ctx.fillText(
-    `Game Over`,
-    CANVAS_WIDTH / 4 + 60,
-    (CANVAS_HEIGHT * 3) / 4 - 200
-  );
+  ctx.font = "40px sans-serif";
+  ctx.fillText("Game Over", CANVAS_WIDTH / 4 + 20, CANVAS_HEIGHT / 2 - 50);
   let maxScore = localStorage.getItem("maxScore");
+  ctx.font = "30px sans-serif";
   ctx.fillText(
     `High Score: ${maxScore}`,
-    CANVAS_WIDTH / 2 - 80,
-    (CANVAS_HEIGHT * 3) / 4 - 300
+    CANVAS_WIDTH / 4 + 30,
+    CANVAS_HEIGHT / 2
   );
   ctx.fillText(
     `Your Score: ${scoreCount.score}`,
-    CANVAS_WIDTH / 2 - 80,
-    (CANVAS_HEIGHT * 3) / 4 - 400
+    CANVAS_WIDTH / 4 + 30,
+    CANVAS_HEIGHT / 2 + 40
   );
 
   ctx.fillText(
     `Press Space to restart`,
-    CANVAS_WIDTH / 2 - 100,
-    (CANVAS_HEIGHT * 3) / 4 - 500
-  );
-}
-function writeGameStart(ctx: CanvasRenderingContext2D) {
-  ctx.fillStyle = "red";
-  ctx.font = "20px sans-serif";
-  ctx.fillText(
-    `Start Game`,
-    CANVAS_WIDTH / 4 + 60,
-    (CANVAS_HEIGHT * 3) / 4 - 200
+    CANVAS_WIDTH / 4 - 20,
+    CANVAS_HEIGHT / 2 + 100
   );
 }
 
@@ -94,6 +119,7 @@ function newPlatform() {
   );
   platformArray.push(platform1);
 }
+
 function newEnemy() {
   const moveHorizontally = Math.random() < 0.1;
   if (moveHorizontally) {
@@ -127,7 +153,7 @@ function createPlatform() {
   }
 }
 
-const drawPlatform = () => {
+const drawPlatform = (deltaTime: number) => {
   platformArray.forEach((pl) => {
     pl.draw(ctx);
     player.updateScore(pl);
@@ -136,10 +162,10 @@ const drawPlatform = () => {
       player.velocityY = player.initialVelocityY;
     }
     if (player.velocityY < 0 && player.position.y < (CANVAS_HEIGHT * 3) / 4) {
-      pl.position.y -= player.initialVelocityY;
+      pl.position.y -= (player.initialVelocityY * deltaTime) / 16.67;
     }
     if (pl.moveHorizontally) {
-      pl.moveX();
+      pl.moveX(deltaTime);
     }
   });
 
@@ -152,7 +178,7 @@ const drawPlatform = () => {
   }
 };
 
-const drawEnemy = () => {
+const drawEnemy = (deltaTime: number) => {
   if (enemyArray.length == 0) {
     newEnemy();
   } else {
@@ -160,12 +186,11 @@ const drawEnemy = () => {
       enemy.draw(ctx);
       if (player.detectCollision(enemy)) {
         jumpMonster.play();
-        // enemyDeath.play();
         gameOver = true;
       }
-      enemy.moveX();
+      enemy.moveX(deltaTime);
       if (player.velocityY < 0 && player.position.y < (CANVAS_HEIGHT * 3) / 4) {
-        enemy.position.y -= player.initialVelocityY;
+        enemy.position.y -= (player.initialVelocityY * deltaTime) / 16.67;
       }
     });
   }
@@ -180,43 +205,77 @@ const createImage = () => {
   player = new Player({ x: CANVAS_WIDTH / 2, y: CANVAS_HEIGHT - 150 }, 50, 60);
 };
 
-function draw() {
+function handleCollisions() {
+  platformArray.forEach((pl) => {
+    if (player.detectCollision(pl) && player.velocityY >= 0) {
+      jump.play();
+      player.velocityY = player.initialVelocityY;
+    }
+  });
+
+  enemyArray.forEach((enemy) => {
+    if (player.detectCollision(enemy)) {
+      jumpMonster.play();
+      gameOver = true;
+    }
+  });
+
+  player.bulletArray.forEach((bullet, bulletIndex) => {
+    enemyArray.forEach((enemy, enemyIndex) => {
+      if (detectCollision(bullet, enemy)) {
+        player.bulletArray.splice(bulletIndex, 1);
+        enemyArray.splice(enemyIndex, 1);
+        enemyDeath.play();
+      }
+    });
+  });
+}
+
+function updateGameState(deltaTime: number) {
   ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-  if (gameOver) {
-    gameOverFunction(ctx);
-    return;
-  }
-  if (!gameOver) {
-    writeGameStart(ctx);
+
+  if (currentState === GameState.Start) {
+    drawStartScreen();
+  } else if (currentState === GameState.Playing) {
+    if (isPaused) {
+      drawPauseScreen();
+      return;
+    }
+
+    if (gameOver) {
+      currentState = GameState.GameOver;
+      gameOverFunction(ctx);
+      return;
+    }
+
+    drawPlatform(deltaTime);
+    drawEnemy(deltaTime);
+    handleCollisions();
 
     if (player.position.y > CANVAS_HEIGHT) {
       fallingSound.play();
-
       gameOver = true;
     }
 
-    ctx.beginPath();
-    drawPlatform();
-    drawEnemy();
-
-    player.moveX();
-    player.moveY();
+    player.moveX(deltaTime);
+    player.moveY(deltaTime);
     player.draw(ctx);
-    player.updateBullets(ctx);
+    player.updateBullets(ctx, deltaTime);
 
-    player.bulletArray.forEach((bullet, bulletIndex) => {
-      enemyArray.forEach((enemy) => {
-        if (detectCollision(bullet, enemy)) {
-          player.bulletArray.splice(bulletIndex, 1);
-          enemyArray.shift();
-          enemyDeath.play();
-        }
-      });
-    });
     writeScore(ctx);
+  } else if (currentState === GameState.GameOver) {
+    gameOverFunction(ctx);
   }
+}
 
-  requestAnimationFrame(draw);
+function gameLoop(currentTime: number) {
+  if (!isPaused) {
+    const deltaTime = currentTime - lastFrameTime;
+    lastFrameTime = currentTime;
+
+    updateGameState(deltaTime);
+  }
+  requestAnimationFrame(gameLoop);
 }
 
 function startGame() {
@@ -229,25 +288,36 @@ function startGame() {
   newEnemy();
 
   player.bulletArray = [];
-  player.initialVelocityY = -5;
-  player.velocityY = 12;
-  player.gravity = 0.14;
+  player.initialVelocityY = -7;
+  player.velocityY = 20;
+  player.gravity = 0.3;
   scoreCount.score = 0;
   player.maxHeight = CANVAS_HEIGHT;
-  draw();
+
+  currentState = GameState.Playing;
+  lastFrameTime = performance.now();
 }
 
-startButton.addEventListener("click", () => {
-  startGame();
-  btnWrapper.style.display = "none";
-  startButton.style.display = "none";
-});
-
-function resetGame() {
-  window.addEventListener("keypress", (e: KeyboardEvent) => {
-    if (e.code === "Space" && gameOver) {
+window.addEventListener("keypress", (e: KeyboardEvent) => {
+  if (e.code === "Space") {
+    if (
+      currentState === GameState.Start ||
+      currentState === GameState.GameOver
+    ) {
       startGame();
     }
-  });
-}
-resetGame();
+  }
+
+  if (e.code === "KeyP" && currentState === GameState.Playing) {
+    isPaused = !isPaused;
+    if (!isPaused) {
+      lastFrameTime = performance.now(); // Reset time to avoid time jump
+      requestAnimationFrame(gameLoop);
+    } else {
+      drawPauseScreen();
+    }
+  }
+});
+
+// Start the game loop initially
+requestAnimationFrame(gameLoop);
