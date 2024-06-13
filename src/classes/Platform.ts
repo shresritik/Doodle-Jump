@@ -1,4 +1,4 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../constants/constants";
+import { CANVAS_HEIGHT } from "../constants/constants";
 import platformImg from "../assets/platform.png";
 export const SPEED = 2;
 export interface IPlatform {

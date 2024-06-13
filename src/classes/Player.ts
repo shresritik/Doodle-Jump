@@ -1,7 +1,8 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../constants/constants";
+import { CANVAS_WIDTH } from "../constants/constants";
 import { Platform, SPEED } from "./Platform";
 import left from "../assets/blueL.png";
 import right from "../assets/blueR.png";
+import { Enemy } from "./Enemy";
 
 interface IPlayer {
   position: { x: number; y: number };
@@ -83,7 +84,7 @@ export class Player implements IPlayer {
     }
   }
 
-  detectCollision(platform: Platform) {
+  detectCollision(platform: Platform | Enemy) {
     return (
       this.position.x < platform.position.x + platform.w &&
       this.position.x + this.w > platform.position.x &&
