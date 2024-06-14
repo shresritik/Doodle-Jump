@@ -1,4 +1,4 @@
-import { scoreCount } from "../classes/Player";
+import { scoreCount } from "../constants/constants";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLOR } from "../constants/constants";
 import { ctx } from "./canvas";
 

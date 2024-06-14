@@ -1,16 +1,8 @@
 import monsterImg from "../assets/monster.png";
 import { CANVAS_WIDTH, SPEED } from "../constants/constants";
+import { Base } from "./Base";
 
-export interface IEnemy {
-  position: { x: number; y: number };
-  h: number;
-  w: number;
-}
-
-export class Enemy implements IEnemy {
-  position: { x: number; y: number };
-  h: number;
-  w: number;
+export class Enemy extends Base {
   img: HTMLImageElement;
   moveHorizontally: boolean;
   directionX: number;
@@ -21,9 +13,7 @@ export class Enemy implements IEnemy {
     w: number,
     moveHorizontally: boolean = false
   ) {
-    this.position = { x: position.x, y: position.y };
-    this.w = w;
-    this.h = h;
+    super(position, h, w);
     this.img = new Image();
     this.img.src = monsterImg;
     this.moveHorizontally = moveHorizontally;

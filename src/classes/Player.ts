@@ -1,9 +1,10 @@
-import { CANVAS_WIDTH, SPEED } from "../constants/constants";
+import { CANVAS_WIDTH, SPEED, scoreCount } from "../constants/constants";
 import { Platform } from "./Platform";
 import left from "../assets/blueL.png";
 import right from "../assets/blueR.png";
 import { Bullet } from "./Bullet";
 import { detectCollision } from "../utils/utils";
+import { Base } from "./Base";
 const playerDeathByMonster = new Audio("/track/arcade-laser.mp3");
 
 interface IPlayer {
@@ -16,12 +17,8 @@ let maxScore: number = 0;
 export interface TKeys {
   [keys: string]: boolean;
 }
-export let scoreCount = { score: 0 };
 
-export class Player implements IPlayer {
-  position: { x: number; y: number; bulletY: number };
-  h: number;
-  w: number;
+export class Player extends Base implements IPlayer {
   image: HTMLImageElement;
   keys: TKeys = {};
   initialVelocityY = -7;
@@ -33,9 +30,8 @@ export class Player implements IPlayer {
   bulletArray: Bullet[] = [];
 
   constructor(position: { x: number; y: number }, h: number, w: number) {
-    this.position = { x: position.x, y: position.y, bulletY: position.y };
-    this.w = w;
-    this.h = h;
+    super({ x: position.x, y: position.y, bulletY: position.y }, h, w);
+
     this.image = new Image();
     this.image.src = left;
     this.velocityY = this.initialVelocityY;

@@ -1,18 +1,13 @@
 import { CANVAS_HEIGHT, SPEED } from "../constants/constants";
 import platformImg from "../assets/platform.png";
 import { ctx } from "../components/canvas";
+import { Base } from "./Base";
 
 export interface IPlatform {
-  position: { x: number; y: number };
-  h: number;
-  w: number;
   color: string;
 }
 
-export class Platform implements IPlatform {
-  position: { x: number; y: number };
-  h: number;
-  w: number;
+export class Platform extends Base implements IPlatform {
   color: string;
   img: HTMLImageElement;
   moveHorizontally: boolean;
@@ -24,9 +19,8 @@ export class Platform implements IPlatform {
     color: string,
     moveHorizontally: boolean = false
   ) {
-    this.position = { x: position.x, y: position.y };
-    this.w = w;
-    this.h = h;
+    super(position, h, w);
+
     this.color = color;
     this.img = new Image();
     this.img.src = platformImg;

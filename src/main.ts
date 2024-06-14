@@ -1,4 +1,5 @@
-import { Player, scoreCount } from "./classes/Player";
+import { Player } from "./classes/Player";
+import { scoreCount } from "./constants/constants";
 import { detectCollision } from "./utils/utils";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, gameStatus } from "./constants/constants";
 import {
