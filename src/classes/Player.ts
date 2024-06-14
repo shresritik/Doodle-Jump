@@ -2,8 +2,8 @@ import { CANVAS_WIDTH, SPEED } from "../constants/constants";
 import { Platform } from "./Platform";
 import left from "../assets/blueL.png";
 import right from "../assets/blueR.png";
-import { Enemy } from "./Enemy";
 import { Bullet } from "./Bullet";
+import { detectCollision } from "../utils/utils";
 const playerDeathByMonster = new Audio("/track/arcade-laser.mp3");
 
 interface IPlayer {
@@ -113,18 +113,10 @@ export class Player implements IPlayer {
     }
   }
 
-  detectCollision(platform: Platform | Enemy | Bullet) {
-    return (
-      this.position.x < platform.position.x + platform.w &&
-      this.position.x + this.w > platform.position.x &&
-      this.position.y < platform.position.y + platform.h &&
-      this.position.y + this.h > platform.position.y
-    );
-  }
   // if the player is in new platform and is not bouncing than increase score
   updateScore(platform: Platform) {
     if (
-      this.detectCollision(platform) &&
+      detectCollision(this, platform) &&
       this.velocityY >= 0 &&
       platform !== this.lastPlatform
     ) {

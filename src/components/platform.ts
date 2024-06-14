@@ -1,7 +1,7 @@
 import { Platform } from "../classes/Platform";
 import { Player } from "../classes/Player";
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../constants/constants";
-import { getRandomValue } from "../utils/utils";
+import { detectCollision, getRandomValue } from "../utils/utils";
 const jump = new Audio("/track/jump.wav");
 
 type TPlatform = {
@@ -58,7 +58,7 @@ export const drawPlatform = (deltaTime: number, player: Player) => {
   platformArray.platform.forEach((pl) => {
     pl.draw();
     player.updateScore(pl);
-    if (player.detectCollision(pl) && player.velocityY >= 0) {
+    if (detectCollision(player, pl) && player.velocityY >= 0) {
       jump.play();
       player.velocityY = player.initialVelocityY;
     }

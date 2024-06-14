@@ -1,7 +1,6 @@
 import { Player, scoreCount } from "./classes/Player";
-import { detectCollision, getRandomValue } from "./utils/utils";
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from "./constants/constants";
-import { Enemy } from "./classes/Enemy";
+import { detectCollision } from "./utils/utils";
+import { CANVAS_HEIGHT, CANVAS_WIDTH, gameStatus } from "./constants/constants";
 import {
   drawPauseScreen,
   drawStartScreen,
@@ -15,6 +14,7 @@ import {
   initialPlatform,
   platformArray,
 } from "./components/platform";
+import { drawEnemy, enemyArray, newEnemy } from "./components/enemy";
 const fallingSound = new Audio("/track/falling-sound-arcade.mp3");
 const enemyDeath = new Audio("/track/barrel-explosion.mp3");
 const jump = new Audio("/track/jump.wav");
@@ -22,8 +22,6 @@ const jumpMonster = new Audio("/track/jumponmonster-arcade.mp3");
 
 fallingSound.volume = 0.2;
 let player: Player;
-let gameOver = false;
-let enemyArray: Enemy[] = [];
 
 enum GameState {
   Start,
@@ -32,47 +30,8 @@ enum GameState {
 }
 
 let currentState: GameState = GameState.Start;
-let isPaused: boolean = false;
 let lastFrameTime = performance.now();
-// create a new Enemy based on random probab less than 10%
-function newEnemy() {
-  const moveHorizontally = Math.random() < 0.1;
-  if (moveHorizontally) {
-    const enemy1 = new Enemy(
-      {
-        x: getRandomValue(20, CANVAS_WIDTH - 100),
-        y: getRandomValue(0, 50),
-      },
-      30,
-      100,
-      moveHorizontally
-    );
-    enemyArray.push(enemy1);
-  }
-}
-// draw the enemy and check for collsiion
-const drawEnemy = (deltaTime: number) => {
-  if (enemyArray.length == 0) {
-    newEnemy();
-  } else {
-    enemyArray.forEach((enemy) => {
-      enemy.draw(ctx);
-      if (player.detectCollision(enemy)) {
-        jumpMonster.play();
-        gameOver = true;
-      }
-      enemy.moveX(deltaTime);
-      if (player.velocityY < 0 && player.position.y < (CANVAS_HEIGHT * 3) / 4) {
-        enemy.position.y -= (player.initialVelocityY * deltaTime) / 16.67;
-      }
-    });
-  }
-  //create new enemy at different position in y axis by removing the enemy from array if it is not in canvas
-  while (enemyArray.length > 0 && enemyArray[0].position.y >= CANVAS_HEIGHT) {
-    enemyArray.shift();
-    newEnemy();
-  }
-};
+
 //instantiate a Player object
 const createImage = () => {
   player = new Player({ x: CANVAS_WIDTH / 2, y: CANVAS_HEIGHT - 150 }, 50, 60);
@@ -80,24 +39,24 @@ const createImage = () => {
 //collision between platform and player , enemy and player
 function handleCollisions() {
   platformArray.platform.forEach((pl) => {
-    if (player.detectCollision(pl) && player.velocityY >= 0) {
+    if (detectCollision(player, pl) && player.velocityY >= 0) {
       jump.play();
       player.velocityY = player.initialVelocityY;
     }
   });
 
-  enemyArray.forEach((enemy) => {
-    if (player.detectCollision(enemy)) {
+  enemyArray.enemy.forEach((enemy) => {
+    if (detectCollision(player, enemy)) {
       jumpMonster.play();
-      gameOver = true;
+      gameStatus.gameOver = true;
     }
   });
 
   player.bulletArray.forEach((bullet, bulletIndex) => {
-    enemyArray.forEach((enemy, enemyIndex) => {
+    enemyArray.enemy.forEach((enemy, enemyIndex) => {
       if (detectCollision(bullet, enemy)) {
         player.bulletArray.splice(bulletIndex, 1);
-        enemyArray.splice(enemyIndex, 1);
+        enemyArray.enemy.splice(enemyIndex, 1);
         enemyDeath.play();
       }
     });
@@ -112,24 +71,24 @@ function updateGameState(deltaTime: number) {
   if (currentState === GameState.Start) {
     drawStartScreen();
   } else if (currentState === GameState.Playing) {
-    if (isPaused) {
+    if (gameStatus.isPaused) {
       drawPauseScreen();
       return;
     }
 
-    if (gameOver) {
+    if (gameStatus.gameOver) {
       currentState = GameState.GameOver;
       gameOverFunction();
       return;
     }
 
     drawPlatform(deltaTime, player);
-    drawEnemy(deltaTime);
+    drawEnemy(deltaTime, player);
     handleCollisions();
 
     if (player.position.y > CANVAS_HEIGHT) {
       fallingSound.play();
-      gameOver = true;
+      gameStatus.gameOver = true;
     }
 
     player.moveX(deltaTime);
@@ -144,7 +103,7 @@ function updateGameState(deltaTime: number) {
 }
 
 function gameLoop(currentTime: number) {
-  if (!isPaused) {
+  if (!gameStatus.isPaused) {
     const deltaTime = currentTime - lastFrameTime;
     lastFrameTime = currentTime;
 
@@ -154,7 +113,7 @@ function gameLoop(currentTime: number) {
 }
 // initiate the variables
 function startGame() {
-  gameOver = false;
+  gameStatus.gameOver = false;
   platformArray.platform = [];
   initialPlatform();
   createPlatform();
@@ -183,8 +142,8 @@ window.addEventListener("keypress", (e: KeyboardEvent) => {
   }
 
   if (e.code === "KeyP" && currentState === GameState.Playing) {
-    isPaused = !isPaused;
-    if (!isPaused) {
+    gameStatus.isPaused = !gameStatus.isPaused;
+    if (!gameStatus.isPaused) {
       lastFrameTime = performance.now(); // Reset time to avoid time jump
       requestAnimationFrame(gameLoop);
     } else {
